@@ -7,19 +7,38 @@ function SignUpPage() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
+    confirmPassword: "", // ✅ 비밀번호 확인 필드 추가
     name: "",
-    login_method: "email", // 기본 로그인 방식 설정
+    login_method: "email",
   });
+  
 
   const [error, setError] = useState("");
+  const [passwordMatch, setPasswordMatch] = useState(true); // ✅ 비밀번호 일치 여부
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+
+    // ✅ 비밀번호 & 비밀번호 확인 비교
+    if (name === "confirmPassword" || name === "password") {
+      setPasswordMatch(
+        name === "confirmPassword"
+          ? value === formData.password
+          : formData.confirmPassword === value
+      );
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
+    // ✅ 비밀번호 일치 여부 확인
+    if (!passwordMatch) {
+      setError("비밀번호가 일치하지 않습니다.");
+      return;
+    }
 
     try {
       console.log("회원가입 요청 전송 중...", formData);
@@ -29,7 +48,14 @@ function SignUpPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          name: formData.name,
+          login_method: "email",
+        }),
+        mode: "cors",  // ✅ CORS 문제 해결
+        credentials: "include",  // ✅ 쿠키/인증 정보 포함 (중요)
       });
 
       const responseData = await response.json();
@@ -40,7 +66,7 @@ function SignUpPage() {
       }
 
       alert("회원가입이 성공적으로 완료되었습니다!");
-      navigate("/login"); // 회원가입 후 로그인 페이지로 이동
+      navigate("/login");
     } catch (err) {
       console.error("회원가입 오류:", err.message);
       setError(err.message || "회원가입 중 오류가 발생했습니다.");
@@ -79,6 +105,19 @@ function SignUpPage() {
           />
           <TextField
             fullWidth
+            label="비밀번호 확인"
+            name="confirmPassword"
+            type="password"
+            variant="outlined"
+            margin="normal"
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            required
+            error={!passwordMatch} // ✅ MUI의 에러 스타일 적용
+            helperText={!passwordMatch ? "비밀번호가 일치하지 않습니다." : ""}
+          />
+          <TextField
+            fullWidth
             label="이름"
             name="name"
             type="text"
@@ -88,7 +127,14 @@ function SignUpPage() {
             onChange={handleChange}
             required
           />
-          <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2 }}>
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            fullWidth
+            sx={{ mt: 2 }}
+            disabled={!passwordMatch} // ✅ 비밀번호가 다르면 버튼 비활성화
+          >
             회원가입
           </Button>
         </form>
