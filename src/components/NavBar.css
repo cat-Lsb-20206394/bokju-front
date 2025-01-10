@@ -1,0 +1,49 @@
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%; /* 100vw 대신 100% 사용 */
+  padding: 10px 20px;
+  background-color: #fff;
+  border-bottom: 1px solid #ccc;
+  box-sizing: border-box; /* 패딩이 width에 포함되도록 설정 */
+}
+
+/* 아이콘 스타일 (햄버거 메뉴 & 홈 버튼) */
+.nav-icon {
+  font-size: 24px;
+  cursor: pointer;
+}
+
+/* 페이지 제목 스타일 */
+.nav-title {
+  flex-grow: 1; /* 가운데 정렬을 위한 flex-grow */
+  text-align: center;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+/* 네비게이션 바 내부 스타일 */
+.nav-drawer {
+  width: 250px; /* 네비게이션 바 너비 */
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* 상단 메뉴 + 하단 로그인 버튼 */
+}
+
+/* 네비게이션 메뉴 리스트 (글자 겹침 방지) */
+.nav-list {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+/* 로그인 / 회원가입을 하단 고정 */
+.nav-bottom {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  padding-bottom: 10px;
+}
