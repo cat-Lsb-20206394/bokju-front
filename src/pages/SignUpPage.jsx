@@ -24,7 +24,7 @@ function SignUpPage() {
     try {
       console.log("회원가입 요청 전송 중...", formData);
 
-      const response = await fetch("https://moipzy.shop/app2/api/users/register", {
+      const response = await fetch("https://moipzy.shop/app2/api/users/user", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
