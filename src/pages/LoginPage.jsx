@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useContext  } from "react";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 import { TextField, Button, Container, Typography, Box } from "@mui/material";
 
 function LoginPage() {
   const navigate = useNavigate();
+  const { login } = useContext(AuthContext); // ✅ 로그인 함수 가져오기
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -31,7 +33,6 @@ function LoginPage() {
         //body: JSON.stringify({ email: "example1@naver.com", password: "1234" }),
         body: JSON.stringify(formData),
         mode: "cors",  // ✅ CORS 문제 방지
-        credentials: "include",  // ✅ 필요한 경우 쿠키 포함
       });
   
       console.log("서버 응답 헤더:", [...response.headers.entries()]); // ✅ 모든 헤더 출력
@@ -52,8 +53,14 @@ function LoginPage() {
       // ✅ JSON 응답 파싱 (사용자 정보 가져오기)
       const data = await response.json();
       console.log("User:", data.user);
-  
-      navigate("/"); // 로그인 성공 후 홈 화면으로 이동
+      localStorage.setItem("user", JSON.stringify(data.user)); // ✅ 사용자 정보 저장
+
+      if (token && data.user) {
+        login(token, data.user); // ✅ 로그인 상태 즉시 업데이트
+        console.log("저장된 토큰:", token);
+        alert("로그인 성공");
+        navigate("/"); // 홈으로 이동
+      }
     } catch (err) {
       console.error("로그인 중 오류:", err.message);
       setError(err.message || "로그인 중 오류가 발생했습니다.");

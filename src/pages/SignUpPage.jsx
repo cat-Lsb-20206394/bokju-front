@@ -55,7 +55,6 @@ function SignUpPage() {
           login_method: "email",
         }),
         mode: "cors",  // ✅ CORS 문제 해결
-        credentials: "include",  // ✅ 쿠키/인증 정보 포함 (중요)
       });
 
       const responseData = await response.json();
