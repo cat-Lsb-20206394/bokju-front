@@ -75,7 +75,31 @@ const TodoPage = () => {
     }
   };
 
-  // ✅ 할 일 수정 기능 (제목, 마감기한, 메모 모두 수정 가능)
+  // ✅ 할 일 상태 변경 (체크박스)
+  const toggleTodoStatus = async (id, currentStatus) => {
+    const updatedStatus = currentStatus === "Not done" ? "completed" : "Not done";
+
+    try {
+      await fetch(`${API_URL}/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ status: updatedStatus }),
+      });
+
+      setTodos(prevTodos =>
+        prevTodos.map(todo =>
+          todo._id === id ? { ...todo, status: updatedStatus } : todo
+        )
+      );
+    } catch (err) {
+      console.error("할 일 상태 변경 오류:", err);
+    }
+  };
+
+  // ✅ 할 일 수정 기능
   const editTodo = async (todo) => {
     const updatedTitle = prompt("새로운 제목을 입력하세요:", todo.title);
     const updatedDueDate = prompt("새로운 마감기한을 입력하세요 (YYYY-MM-DD):", todo.due_date?.split("T")[0]);
@@ -138,10 +162,17 @@ const TodoPage = () => {
       <ul className="todo-list">
         {todos.map((todo) => (
           <li key={todo._id} className="todo-item">
+            {/* ✅ 체크박스 추가 */}
+            <input
+              type="checkbox"
+              checked={todo.status === "completed"}
+              onChange={() => toggleTodoStatus(todo._id, todo.status)}
+            />
+
             <span className="todo-text">
               {todo.title} ({todo.due_date?.split("T")[0]})
               <br />
-              <small className="todo-description">{todo.description || "메모 없음"}</small>
+              <small className="todo-description">{todo.description || "메모 없음"}</small>c
             </span>
             <div className="todo-actions">
               <button className="todo-edit-btn" onClick={() => editTodo(todo)}>
