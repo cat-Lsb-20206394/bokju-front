@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { FaTrash, FaEdit } from "react-icons/fa"; // ✅ 아이콘 추가
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import "./TodoPage.css"; // ✅ CSS 적용
 
 const TodoPage = () => {
@@ -44,10 +43,6 @@ const TodoPage = () => {
   useEffect(() => {
     fetchTodos();
   }, [user, token]);
-
-  useEffect(() => {
-    console.log("현재 todos:", todos);
-  }, [todos]);
 
   // ✅ 팝업 닫기
   const closePopup = () => {
@@ -97,8 +92,14 @@ const TodoPage = () => {
     }
   };
 
-  // Update todo status
-  const toggleTodoStatus = async (todo) => {
+  // ✅ 할 일 수정 기능 (제목, 마감기한, 메모 모두 수정 가능)
+  const editTodo = async (todo) => {
+    const updatedTitle = prompt("새로운 제목을 입력하세요:", todo.title);
+    const updatedDueDate = prompt("새로운 마감기한을 입력하세요 (YYYY-MM-DD):", todo.due_date?.split("T")[0]);
+    const updatedDescription = prompt("새로운 메모를 입력하세요:", todo.description || "");
+
+    if (!updatedTitle || !updatedDueDate) return;
+
     const updatedTodo = {
       ...todo,
       status: todo.status === "Not done" ? "completed" : "Not done",
@@ -134,28 +135,6 @@ const TodoPage = () => {
     }
   };
 
-  // ✅ 드래그 앤 드랍 - 할 일 순서 변경
-  const handleDragEnd = (result) => {
-    if (!result.destination) return;
-  
-    const reorderedTodos = [...todos];
-    const [movedTodo] = reorderedTodos.splice(result.source.index, 1);
-    reorderedTodos.splice(result.destination.index, 0, movedTodo);
-  
-    setTodos(reorderedTodos);
-  };
-
-  if (!user) {
-    return (
-      <div className="login-container">
-        <h2>로그인이 필요합니다.</h2>
-        <button className="login-button" onClick={() => (window.location.href = "/login")}>
-          로그인 페이지로 이동
-        </button>
-      </div>
-    );
-  }
-
   return (
     <div className="todo-container">
       <h2 className="todo-title">할 일 목록</h2>
@@ -166,24 +145,11 @@ const TodoPage = () => {
 
       <ul className="todo-list">
         {todos.map((todo) => (
-          <li
-            key={todo._id}
-            className={`todo-item ${
-              todo.status === "completed" ? "todo-completed" : ""
-            }`}
-          >
-            <input
-              type="checkbox"
-              className="todo-checkbox"
-              checked={todo.status === "completed"}
-              onChange={() => toggleTodoStatus(todo)}
-            />
+          <li key={todo._id} className="todo-item">
             <span className="todo-text">
               {todo.title} ({todo.due_date?.split("T")[0]})
               <br />
-              <small className="todo-description">
-                {todo.description || "메모 없음"}
-              </small>
+              <small className="todo-description">{todo.description || "메모 없음"}</small>
             </span>
             <div className="todo-actions">
               <button
