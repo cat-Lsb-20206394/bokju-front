@@ -1,0 +1,81 @@
+/* HistoryPage.css */
+.history-container {
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 10px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.history-title {
+  text-align: center;
+  font-size: 24px;
+  color: #333;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.todo-list {
+  list-style: none;
+  padding: 0;
+}
+
+.todo-item {
+  background: white;
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-left: 5px solid #007bff;
+  transition: 0.3s;
+}
+
+.todo-item:hover {
+  background: #e9ecef;
+}
+
+.todo-text {
+  font-size: 16px;
+  color: #333;
+}
+
+.overdue {
+  color: red;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.no-tasks {
+  text-align: center;
+  font-size: 16px;
+  color: #777;
+}
+
+.login-container {
+  text-align: center;
+  margin-top: 50px;
+}
+
+.login-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  color: white;
+  background: #007bff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.login-button:hover {
+  background: #0056b3;
+}

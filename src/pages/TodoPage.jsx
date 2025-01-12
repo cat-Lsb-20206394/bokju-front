@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
+import { FaTrash, FaEdit } from "react-icons/fa"; // ✅ 아이콘 추가
+import "./TodoPage.css"; // ✅ CSS 적용
 
 const TodoPage = () => {
   const { user } = useContext(AuthContext);
@@ -18,7 +20,6 @@ const TodoPage = () => {
     try {
       const response = await fetch(API_URL, {
         method: "GET",
-        mode: "cors",
         headers: { 
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
@@ -30,22 +31,15 @@ const TodoPage = () => {
       }
 
       const data = await response.json();
-      console.log("📌 서버에서 받은 전체 응답:", data);
+      if (!data || !Array.isArray(data.todoAllData)) return;
 
-      if (!data || !Array.isArray(data.todoAllData)) {
-        console.error("🚨 할 일 목록이 존재하지 않음:", data);
-        return;
-      }
-
-      console.log("✅ 변환된 할 일 목록:", data.todoAllData);
-      setTodos(data.todoAllData); // 🎯 올바르게 설정
+      setTodos(data.todoAllData);
     } catch (err) {
       console.error("할 일 목록 가져오기 실패:", err);
     }
   };
 
   useEffect(() => {
-    console.log("🔥 useEffect 실행됨! 사용자:", user, "토큰:", token);
     fetchTodos();
   }, [user, token]);
 
@@ -57,15 +51,14 @@ const TodoPage = () => {
       title: newTodo,
       description,
       status: "Not done",
-      due_date: new Date(dueDate).toISOString(),
+      due_date: new Date(`${dueDate}T23:59:00Z`).toISOString(), // ✅ 23:59 기본값 설정
       is_recurring: false,
       category: "일반",
     };
 
     try {
-      const response = await fetch(API_URL, {
+      await fetch(API_URL, {
         method: "POST",
-        mode: "cors",
         headers: { 
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
@@ -73,12 +66,7 @@ const TodoPage = () => {
         body: JSON.stringify(todoData),
       });
 
-      if (!response.ok) throw new Error("할 일 추가 실패");
-
-      const newTask = await response.json();
-      setTodos(prevTodos => [...prevTodos, newTask]); // ✅ 추가된 할 일 즉시 반영
-      fetchTodos(); // ✅ 최신 목록 다시 불러오기
-
+      fetchTodos();
       setNewTodo("");
       setDueDate("");
       setDescription("");
@@ -87,43 +75,45 @@ const TodoPage = () => {
     }
   };
 
-  // ✅ 할 일 상태 변경 (체크박스)
-  const toggleTodoStatus = async (_id, currentStatus) => {
-    const updatedStatus = currentStatus === "Not done" ? "completed" : "Not done";
+  // ✅ 할 일 수정 기능 (제목, 마감기한, 메모 모두 수정 가능)
+  const editTodo = async (todo) => {
+    const updatedTitle = prompt("새로운 제목을 입력하세요:", todo.title);
+    const updatedDueDate = prompt("새로운 마감기한을 입력하세요 (YYYY-MM-DD):", todo.due_date?.split("T")[0]);
+    const updatedDescription = prompt("새로운 메모를 입력하세요:", todo.description || "");
+
+    if (!updatedTitle || !updatedDueDate) return;
+
+    const updatedTodo = {
+      title: updatedTitle,
+      due_date: new Date(`${updatedDueDate}T23:59:00Z`).toISOString(),
+      description: updatedDescription
+    };
 
     try {
-      const response = await fetch(`${API_URL}/${_id}`, {
+      await fetch(`${API_URL}/${todo._id}`, {
         method: "PATCH",
-        mode: "cors",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
         },
-        body: JSON.stringify({ status: updatedStatus }),
+        body: JSON.stringify(updatedTodo),
       });
 
-      if (!response.ok) throw new Error("상태 변경 실패");
-
-      fetchTodos(); // ✅ 최신 목록 다시 불러오기
+      fetchTodos();
     } catch (err) {
-      console.error("할 일 상태 변경 오류:", err);
+      console.error("할 일 수정 오류:", err);
     }
   };
 
   // ✅ 할 일 삭제
   const deleteTodo = async (_id) => {
     try {
-      const response = await fetch(`${API_URL}/${_id}`, {
+      await fetch(`${API_URL}/${_id}`, {
         method: "DELETE",
-        mode: "cors",
-        headers: { 
-          "Authorization": `Bearer ${token}`
-        }
+        headers: { "Authorization": `Bearer ${token}` }
       });
 
-      if (!response.ok) throw new Error("할 일 삭제 실패");
-
-      fetchTodos(); // ✅ 최신 목록 다시 불러오기
+      fetchTodos();
     } catch (err) {
       console.error("할 일 삭제 오류:", err);
     }
@@ -131,30 +121,47 @@ const TodoPage = () => {
 
   if (!user) {
     return (
-      <div>
+      <div className="login-container">
         <h2>로그인이 필요합니다.</h2>
-        <button onClick={() => (window.location.href = "/login")}>로그인 페이지로 이동</button>
+        <button className="login-button" onClick={() => (window.location.href = "/login")}>
+          로그인 페이지로 이동
+        </button>
       </div>
     );
   }
 
   return (
-    <div>
-      <h2>할 일 목록</h2>
-      <input type="text" value={newTodo} onChange={(e) => setNewTodo(e.target.value)} placeholder="할 일 제목" required />
-      <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} required />
-      <input type="text" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="설명 (선택)" />
-      <button onClick={addTodo}>추가</button>
+    <div className="todo-container">
+      <h2 className="todo-title">할 일 목록</h2>
 
-      <ul>
+      {/* ✅ 할 일 목록 (위에 배치) */}
+      <ul className="todo-list">
         {todos.map((todo) => (
-          <li key={todo._id}>
-            <input type="checkbox" checked={todo.status === "completed"} onChange={() => toggleTodoStatus(todo._id, todo.status)} />
-            <span>{todo.title} ({todo.due_date?.split("T")[0]}) - {todo.status}</span>
-            <button onClick={() => deleteTodo(todo._id)}>삭제</button>
+          <li key={todo._id} className="todo-item">
+            <span className="todo-text">
+              {todo.title} ({todo.due_date?.split("T")[0]})
+              <br />
+              <small className="todo-description">{todo.description || "메모 없음"}</small>
+            </span>
+            <div className="todo-actions">
+              <button className="todo-edit-btn" onClick={() => editTodo(todo)}>
+                <FaEdit />
+              </button>
+              <button className="todo-delete-btn" onClick={() => deleteTodo(todo._id)}>
+                <FaTrash />
+              </button>
+            </div>
           </li>
         ))}
       </ul>
+
+      {/* ✅ 추가 입력칸 (아래 배치) */}
+      <div className="todo-add-section">
+        <input type="text" className="todo-input" value={newTodo} onChange={(e) => setNewTodo(e.target.value)} placeholder="할 일 제목" required />
+        <input type="date" className="todo-input" value={dueDate} onChange={(e) => setDueDate(e.target.value)} required />
+        <input type="text" className="todo-input" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="메모 (선택)" />
+        <button className="todo-button" onClick={addTodo}>추가</button>
+      </div>
     </div>
   );
 };
