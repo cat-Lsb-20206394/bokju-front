@@ -61,7 +61,6 @@ const TodoPage = () => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-
   // ✅ 할 일 추가 함수
   const addTodo = async () => {
     if (!newTodo || !dueDate) return alert("제목과 날짜를 입력해주세요!");
@@ -92,34 +91,25 @@ const TodoPage = () => {
     }
   };
 
-  // ✅ 할 일 수정 기능 (제목, 마감기한, 메모 모두 수정 가능)
-  const editTodo = async (todo) => {
-    const updatedTitle = prompt("새로운 제목을 입력하세요:", todo.title);
-    const updatedDueDate = prompt("새로운 마감기한을 입력하세요 (YYYY-MM-DD):", todo.due_date?.split("T")[0]);
-    const updatedDescription = prompt("새로운 메모를 입력하세요:", todo.description || "");
-
-    if (!updatedTitle || !updatedDueDate) return;
-
-    const updatedTodo = {
-      ...todo,
-      status: todo.status === "Not done" ? "completed" : "Not done",
-    };
+  // ✅ 할 일 상태 변경 (체크박스)
+  const toggleTodoStatus = async (todo) => {
+    const updatedStatus = todo.status === "Not done" ? "completed" : "Not done";
 
     try {
       await fetch(`${API_URL}/${todo._id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          "Authorization": `Bearer ${token}`,
         },
-        body: JSON.stringify(updatedTodo),
+        body: JSON.stringify({ status: updatedStatus }),
       });
 
       fetchTodos();
     } catch (err) {
       console.error("할 일 상태 변경 오류:", err);
     }
-  }
+  };
 
   // ✅ 할 일 삭제
   const deleteTodo = async (_id) => {
@@ -146,6 +136,11 @@ const TodoPage = () => {
       <ul className="todo-list">
         {todos.map((todo) => (
           <li key={todo._id} className="todo-item">
+            <input
+              type="checkbox"
+              checked={todo.status === "completed"}
+              onChange={() => toggleTodoStatus(todo)}
+            />
             <span className="todo-text">
               {todo.title} ({todo.due_date?.split("T")[0]})
               <br />
