@@ -15,23 +15,13 @@
 }
 
 .todo-input {
-  width: 100%;
+  width: calc(100% - 20px);
   padding: 10px;
   margin-bottom: 10px;
   border: 1px solid #ccc;
   border-radius: 5px;
   font-size: 16px;
-}
-
-.todo-button {
-  width: 100%;
-  padding: 10px;
-  font-size: 16px;
-  background: #007bff;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
+  box-sizing: border-box;
 }
 
 .todo-list {
@@ -42,12 +32,20 @@
 .todo-item {
   background: white;
   padding: 12px;
-  margin: 8px 0;
+  margin: 12px 0;
   border-radius: 5px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   border-left: 5px solid #007bff;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* ✅ 살짝 음영 추가 */
+  transition: box-shadow 0.3s ease; /* ✅ 부드러운 효과 추가 */
+  cursor: pointer; /* ✅ 클릭 가능한 느낌 */
+}
+
+.todo-item:hover {
+  box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.15); /* ✅ hover 시 음영 확대 */
+  background-color: #f1f1f1; /* ✅ 호버 시 배경색 추가 */
 }
 
 .todo-description {
@@ -66,8 +64,96 @@
   cursor: pointer;
   font-size: 18px;
   color: #333;
+  transition: color 0.3s ease;
+}
+
+.todo-edit-btn:hover {
+  color: blue; /* 수정 버튼 hover 색상 */
 }
 
 .todo-delete-btn:hover {
   color: red;
+}
+
+.todo-completed {
+  opacity: 0.6;
+  text-decoration: line-through;
+}
+
+input[type="checkbox"] {
+  transform: scale(1.5); /* ✅ 크기 조정 */
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+.add-todo-button {
+  display: block;
+  margin: 20px auto;
+  width: 50%; /* ✅ 길이 줄이기 */
+  padding: 10px;
+  font-size: 16px;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.popup-content {
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  width: 400px;
+  max-width: 100%;
+}
+
+.popup-content h3 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.popup-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.todo-button {
+  width: 48%; /* ✅ 버튼 크기 조정 */
+  padding: 8px;
+  font-size: 14px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: center;
+  transition: background-color 0.3s ease; /* ✅ 호버 효과 추가 */
+}
+
+.todo-button.cancel {
+  background-color: #dc3545;
+}
+
+.todo-button:hover {
+  background-color: #0056b3; /* ✅ 호버 시 색상 변경 (파란 버튼) */
+}
+
+.todo-button.cancel:hover {
+  background-color: #c82333; /* ✅ 호버 시 색상 변경 (빨간 버튼) */
 }

@@ -1,11 +1,13 @@
 import React, { useEffect, useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { FaTrash, FaEdit } from "react-icons/fa"; // ✅ 아이콘 추가
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import "./TodoPage.css"; // ✅ CSS 적용
 
 const TodoPage = () => {
   const { user } = useContext(AuthContext);
   const [todos, setTodos] = useState([]);
+  const [showPopup, setShowPopup] = useState(false);
   const [newTodo, setNewTodo] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [description, setDescription] = useState("");
@@ -43,6 +45,28 @@ const TodoPage = () => {
     fetchTodos();
   }, [user, token]);
 
+  useEffect(() => {
+    console.log("현재 todos:", todos);
+  }, [todos]);
+
+  // ✅ 팝업 닫기
+  const closePopup = () => {
+    setShowPopup(false);
+    setNewTodo("");
+    setDueDate("");
+    setDescription("");
+  };
+
+  // ✅ ESC 키로 팝업 닫기
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") closePopup();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+
   // ✅ 할 일 추가 함수
   const addTodo = async () => {
     if (!newTodo || !dueDate) return alert("제목과 날짜를 입력해주세요!");
@@ -67,26 +91,17 @@ const TodoPage = () => {
       });
 
       fetchTodos();
-      setNewTodo("");
-      setDueDate("");
-      setDescription("");
+      closePopup();
     } catch (err) {
       console.error("할 일 추가 오류:", err);
     }
   };
 
-  // ✅ 할 일 수정 기능 (제목, 마감기한, 메모 모두 수정 가능)
-  const editTodo = async (todo) => {
-    const updatedTitle = prompt("새로운 제목을 입력하세요:", todo.title);
-    const updatedDueDate = prompt("새로운 마감기한을 입력하세요 (YYYY-MM-DD):", todo.due_date?.split("T")[0]);
-    const updatedDescription = prompt("새로운 메모를 입력하세요:", todo.description || "");
-
-    if (!updatedTitle || !updatedDueDate) return;
-
+  // Update todo status
+  const toggleTodoStatus = async (todo) => {
     const updatedTodo = {
-      title: updatedTitle,
-      due_date: new Date(`${updatedDueDate}T23:59:00Z`).toISOString(),
-      description: updatedDescription
+      ...todo,
+      status: todo.status === "Not done" ? "completed" : "Not done",
     };
 
     try {
@@ -94,16 +109,16 @@ const TodoPage = () => {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(updatedTodo),
       });
 
       fetchTodos();
     } catch (err) {
-      console.error("할 일 수정 오류:", err);
+      console.error("할 일 상태 변경 오류:", err);
     }
-  };
+  }
 
   // ✅ 할 일 삭제
   const deleteTodo = async (_id) => {
@@ -117,6 +132,17 @@ const TodoPage = () => {
     } catch (err) {
       console.error("할 일 삭제 오류:", err);
     }
+  };
+
+  // ✅ 드래그 앤 드랍 - 할 일 순서 변경
+  const handleDragEnd = (result) => {
+    if (!result.destination) return;
+  
+    const reorderedTodos = [...todos];
+    const [movedTodo] = reorderedTodos.splice(result.source.index, 1);
+    reorderedTodos.splice(result.destination.index, 0, movedTodo);
+  
+    setTodos(reorderedTodos);
   };
 
   if (!user) {
@@ -134,20 +160,42 @@ const TodoPage = () => {
     <div className="todo-container">
       <h2 className="todo-title">할 일 목록</h2>
 
-      {/* ✅ 할 일 목록 (위에 배치) */}
+      <button className="add-todo-button" onClick={() => setShowPopup(true)}>
+        할 일 추가
+      </button>
+
       <ul className="todo-list">
         {todos.map((todo) => (
-          <li key={todo._id} className="todo-item">
+          <li
+            key={todo._id}
+            className={`todo-item ${
+              todo.status === "completed" ? "todo-completed" : ""
+            }`}
+          >
+            <input
+              type="checkbox"
+              className="todo-checkbox"
+              checked={todo.status === "completed"}
+              onChange={() => toggleTodoStatus(todo)}
+            />
             <span className="todo-text">
               {todo.title} ({todo.due_date?.split("T")[0]})
               <br />
-              <small className="todo-description">{todo.description || "메모 없음"}</small>
+              <small className="todo-description">
+                {todo.description || "메모 없음"}
+              </small>
             </span>
             <div className="todo-actions">
-              <button className="todo-edit-btn" onClick={() => editTodo(todo)}>
-                <FaEdit />
+              <button
+                className="todo-edit-btn"
+                onClick={() => console.log("수정 버튼 클릭:", todo)}
+              >
+                <FaEdit /> {/* 수정 버튼 아이콘 */}
               </button>
-              <button className="todo-delete-btn" onClick={() => deleteTodo(todo._id)}>
+              <button
+                className="todo-delete-btn"
+                onClick={() => deleteTodo(todo._id)}
+              >
                 <FaTrash />
               </button>
             </div>
@@ -155,13 +203,45 @@ const TodoPage = () => {
         ))}
       </ul>
 
-      {/* ✅ 추가 입력칸 (아래 배치) */}
-      <div className="todo-add-section">
-        <input type="text" className="todo-input" value={newTodo} onChange={(e) => setNewTodo(e.target.value)} placeholder="할 일 제목" required />
-        <input type="date" className="todo-input" value={dueDate} onChange={(e) => setDueDate(e.target.value)} required />
-        <input type="text" className="todo-input" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="메모 (선택)" />
-        <button className="todo-button" onClick={addTodo}>추가</button>
-      </div>
+      {showPopup && (
+        <div className="popup-overlay">
+          <div className="popup-content">
+            <h3>새로운 할 일 추가</h3>
+            <input
+              type="text"
+              className="todo-input"
+              value={newTodo}
+              onChange={(e) => setNewTodo(e.target.value)}
+              placeholder="할 일 제목"
+              required
+            />
+            <input
+              type="date"
+              className="todo-input"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              required
+            />
+            <textarea
+              className="todo-input"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="메모 (선택)"
+            />
+            <div className="popup-actions">
+              <button className="todo-button" onClick={addTodo}>
+                추가
+              </button>
+              <button
+                className="todo-button cancel"
+                onClick={() => setShowPopup(false)}
+              >
+                취소
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
