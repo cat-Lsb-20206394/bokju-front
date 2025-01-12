@@ -7,20 +7,47 @@ const TodoPage = () => {
   const [newTodo, setNewTodo] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [description, setDescription] = useState("");
+  const token = localStorage.getItem("token");
+
+  const API_URL = "https://moipzy.shop/app2/api/todos/todo";
 
   // ✅ 할 일 목록 가져오기
-  useEffect(() => {
-    if (!user) return;
+  const fetchTodos = async () => {
+    if (!user || !token) return;
 
-    fetch("https://moipzy.shop/app2/api/todos", {
-      method: "GET",
-      mode: "cors",
-      headers: { "Content-Type": "application/json" },
-    })
-      .then((res) => res.json())
-      .then((data) => setTodos(data))
-      .catch((err) => console.error("할 일 목록 가져오기 실패:", err));
-  }, [user]);
+    try {
+      const response = await fetch(API_URL, {
+        method: "GET",
+        mode: "cors",
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`API 요청 실패: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("📌 서버에서 받은 전체 응답:", data);
+
+      if (!data || !Array.isArray(data.todoAllData)) {
+        console.error("🚨 할 일 목록이 존재하지 않음:", data);
+        return;
+      }
+
+      console.log("✅ 변환된 할 일 목록:", data.todoAllData);
+      setTodos(data.todoAllData); // 🎯 올바르게 설정
+    } catch (err) {
+      console.error("할 일 목록 가져오기 실패:", err);
+    }
+  };
+
+  useEffect(() => {
+    console.log("🔥 useEffect 실행됨! 사용자:", user, "토큰:", token);
+    fetchTodos();
+  }, [user, token]);
 
   // ✅ 할 일 추가 함수
   const addTodo = async () => {
@@ -30,23 +57,28 @@ const TodoPage = () => {
       title: newTodo,
       description,
       status: "Not done",
-      due_date: new Date(dueDate).toISOString(), // 날짜 변환
+      due_date: new Date(dueDate).toISOString(),
       is_recurring: false,
       category: "일반",
     };
 
     try {
-      const response = await fetch("https://moipzy.shop/app2/api/todos", {
+      const response = await fetch(API_URL, {
         method: "POST",
         mode: "cors",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
         body: JSON.stringify(todoData),
       });
 
       if (!response.ok) throw new Error("할 일 추가 실패");
 
       const newTask = await response.json();
-      setTodos([...todos, newTask]); // UI 업데이트
+      setTodos(prevTodos => [...prevTodos, newTask]); // ✅ 추가된 할 일 즉시 반영
+      fetchTodos(); // ✅ 최신 목록 다시 불러오기
+
       setNewTodo("");
       setDueDate("");
       setDescription("");
@@ -56,42 +88,47 @@ const TodoPage = () => {
   };
 
   // ✅ 할 일 상태 변경 (체크박스)
-  const toggleTodoStatus = async (id, currentStatus) => {
+  const toggleTodoStatus = async (_id, currentStatus) => {
     const updatedStatus = currentStatus === "Not done" ? "completed" : "Not done";
 
     try {
-      const response = await fetch(`https://moipzy.shop/app2/api/todos/${id}`, {
+      const response = await fetch(`${API_URL}/${_id}`, {
         method: "PATCH",
         mode: "cors",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
         body: JSON.stringify({ status: updatedStatus }),
       });
 
       if (!response.ok) throw new Error("상태 변경 실패");
 
-      setTodos(todos.map((todo) => (todo.id === id ? { ...todo, status: updatedStatus } : todo)));
+      fetchTodos(); // ✅ 최신 목록 다시 불러오기
     } catch (err) {
       console.error("할 일 상태 변경 오류:", err);
     }
   };
 
   // ✅ 할 일 삭제
-  const deleteTodo = async (id) => {
+  const deleteTodo = async (_id) => {
     try {
-      const response = await fetch(`https://moipzy.shop/app2/api/todos/${id}`, {
+      const response = await fetch(`${API_URL}/${_id}`, {
         method: "DELETE",
         mode: "cors",
+        headers: { 
+          "Authorization": `Bearer ${token}`
+        }
       });
 
       if (!response.ok) throw new Error("할 일 삭제 실패");
 
-      setTodos(todos.filter((todo) => todo.id !== id));
+      fetchTodos(); // ✅ 최신 목록 다시 불러오기
     } catch (err) {
       console.error("할 일 삭제 오류:", err);
     }
   };
 
-  // ✅ 로그인 안 한 경우 로그인 페이지로 이동 버튼 표시
   if (!user) {
     return (
       <div>
@@ -104,25 +141,17 @@ const TodoPage = () => {
   return (
     <div>
       <h2>할 일 목록</h2>
-      {/* ✅ 할 일 추가 입력 필드 */}
       <input type="text" value={newTodo} onChange={(e) => setNewTodo(e.target.value)} placeholder="할 일 제목" required />
       <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} required />
       <input type="text" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="설명 (선택)" />
       <button onClick={addTodo}>추가</button>
 
-      {/* ✅ 할 일 목록 */}
       <ul>
         {todos.map((todo) => (
-          <li key={todo.id}>
-            <input
-              type="checkbox"
-              checked={todo.status === "completed"}
-              onChange={() => toggleTodoStatus(todo.id, todo.status)}
-            />
-            <span>
-              {todo.title} ({todo.due_date?.split("T")[0]}) - {todo.status}
-            </span>
-            <button onClick={() => deleteTodo(todo.id)}>삭제</button>
+          <li key={todo._id}>
+            <input type="checkbox" checked={todo.status === "completed"} onChange={() => toggleTodoStatus(todo._id, todo.status)} />
+            <span>{todo.title} ({todo.due_date?.split("T")[0]}) - {todo.status}</span>
+            <button onClick={() => deleteTodo(todo._id)}>삭제</button>
           </li>
         ))}
       </ul>
