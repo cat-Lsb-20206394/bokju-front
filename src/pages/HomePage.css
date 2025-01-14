@@ -1,40 +1,47 @@
-.home-container {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-  height: 80vh;
-  padding: 10px;
-}
-
-/* 왼쪽(캘린더) */
-.calendar-box {
-  flex: 1;
-  border: 1px solid #ccc;
+.homepage-container {
   display: flex;
   justify-content: center;
-  align-items: center;
-  font-size: 1.2rem;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 20px;
 }
 
-/* 오른쪽(오늘 일정) */
-.schedule-box {
+.calendar-section {
   flex: 1;
-  border: 1px solid #ccc;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  font-size: 1.2rem;
+  max-width: 400px;
 }
 
-/* 반응형: 모바일 화면에서는 세로 배치 */
+.schedule-section {
+  flex: 2;
+  padding: 20px;
+  border-left: 2px solid #ddd;
+}
+
 @media (max-width: 768px) {
-  .home-container {
+  .homepage-container {
     flex-direction: column;
+    align-items: center;
   }
-  
-  .calendar-box, .schedule-box {
+  .schedule-section {
+    border-left: none;
+    border-top: 2px solid #ddd;
     width: 100%;
-    height: 50%;
   }
+}
+
+.todo-list, .schedule-list {
+  list-style: none;
+  padding: 0;
+}
+
+.todo-item, .schedule-list li {
+  padding: 10px;
+  margin: 5px 0;
+  background: #f9f9f9;
+  border-radius: 5px;
+}
+
+.todo-item {
+  font-weight: bold;
+  color: #2d89ef;
 }

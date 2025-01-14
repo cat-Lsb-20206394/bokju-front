@@ -17,7 +17,7 @@ function App() {
       <Router>
         <NavBar />
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          <Route path="/" element={<PrivateRoute><HomePage /></PrivateRoute>} />
           <Route path="/todo" element={<PrivateRoute><TodoPage /></PrivateRoute>} />
           <Route path="/schedule" element={<PrivateRoute><SchedulePage /></PrivateRoute>} />
           <Route path="/history" element={<PrivateRoute><HistoryPage /></PrivateRoute>} />
