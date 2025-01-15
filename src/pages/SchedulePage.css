@@ -1,58 +1,214 @@
+/* ✅ 전체 컨테이너 정리 */
 .schedule-container {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* ✅ 제목 스타일 */
+h2 {
+  text-align: center;
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #333;
+}
+/* ✅ 날짜 선택 컨테이너 */
+.date-selector {
   display: flex;
-  justify-content: space-between;
-  padding: 20px;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 15px;
 }
 
-.todo-section, .schedule-section {
-  width: 48%;
+/* ✅ 날짜 선택 라벨 스타일 */
+.date-selector label {
+  font-size: 16px;
+  font-weight: bold;
+  margin-right: 10px;
+  color: #333;
+}
+
+/* ✅ 날짜 선택 input 스타일 */
+.date-selector input[type="date"] {
+  padding: 8px 12px;
+  font-size: 16px;
+  border: 2px solid #007bff;
+  border-radius: 6px;
+  outline: none;
   background-color: #f8f9fa;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
 }
 
-.todo-list, .schedule-list {
+/* ✅ 날짜 선택 hover 효과 */
+.date-selector input[type="date"]:hover {
+  background-color: #e9ecef;
+}
+
+/* ✅ 날짜 선택 focus 효과 */
+.date-selector input[type="date"]:focus {
+  border-color: #0056b3;
+  background-color: #fff;
+}
+
+/* ✅ 날짜 선택 input과 버튼을 동일한 스타일로 정렬 */
+.date-selector input[type="date"],
+.add-schedule-btn {
+  display: inline-block;
+  width: auto;
+  text-align: center;
+}
+
+/* ✅ 일정 추가 버튼 */
+.add-schedule-btn {
+  display: block;
+  margin: 20px auto;
+  width: 50%; /* ✅ 길이 줄이기 */
+  padding: 10px;
+  font-size: 16px;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: center;
+}
+
+/* ✅ 일정 리스트 스타일 */
+.schedule-list {
   list-style: none;
   padding: 0;
 }
 
-.todo-item, .schedule-item {
-  background: white;
-  padding: 12px;
-  margin: 12px 0;
-  border-radius: 5px;
+.schedule-item {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  border-left: 5px solid #007bff;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-  transition: box-shadow 0.3s ease;
+  justify-content: space-between;
+  background: #f8f9fa;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease-in-out;
 }
 
-.todo-item:hover, .schedule-item:hover {
-  box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.15);
-  background-color: #f1f1f1;
+.schedule-item:hover {
+  transform: scale(1.02);
 }
 
+/* ✅ 일정 제목과 시간 스타일 */
+.schedule-text {
+  flex-grow: 1;
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+}
+
+.schedule-text small {
+  display: block;
+  font-size: 14px;
+  color: #666;
+}
+
+/* ✅ 버튼 컨테이너 (수정/삭제) */
 .schedule-actions {
   display: flex;
-  gap: 10px;
+  gap: 8px;
 }
 
-.edit-btn, .delete-btn {
-  background: none;
+/* ✅ 버튼 스타일 (수정 / 삭제) */
+.schedule-edit-btn, .schedule-delete-btn {
   border: none;
+  background: transparent;
   cursor: pointer;
   font-size: 18px;
+  padding: 5px;
+  transition: color 0.2s ease-in-out;
+}
+
+.schedule-edit-btn {
+  color: #007bff;
+}
+
+.schedule-edit-btn:hover {
+  color: #0056b3;
+}
+
+.schedule-delete-btn {
+  color: #dc3545;
+}
+
+.schedule-delete-btn:hover {
+  color: #a71d2a;
+}
+
+/* ✅ 팝업 오버레이 */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ✅ 팝업 컨테이너 */
+.popup-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 350px;
+  text-align: center;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.popup-content h3 {
+  font-size: 20px;
+  margin-bottom: 15px;
   color: #333;
-  transition: color 0.3s ease;
 }
 
-.edit-btn:hover {
-  color: blue;
+/* ✅ 팝업 내 입력 필드 */
+.popup-content input {
+  width: 90%;
+  padding: 8px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
 }
 
-.delete-btn:hover {
-  color: red;
+/* ✅ 팝업 버튼 */
+.popup-content button {
+  margin-top: 10px;
+  padding: 8px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.3s;
+}
+
+.popup-content button:first-of-type {
+  background: #007bff;
+  color: white;
+}
+
+.popup-content button:first-of-type:hover {
+  background: #0056b3;
+}
+
+.popup-content button:last-of-type {
+  background: #dc3545;
+  color: white;
+}
+
+.popup-content button:last-of-type:hover {
+  background: #a71d2a;
 }

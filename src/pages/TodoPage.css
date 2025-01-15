@@ -85,7 +85,13 @@ input[type="checkbox"] {
   margin-right: 10px;
   cursor: pointer;
 }
+.todo-list.expired .todo-item {
+  opacity: 0.5;
+}
 
+.todo-list.completed .todo-item {
+  opacity: 0.5;
+}
 .add-todo-button {
   display: block;
   margin: 20px auto;
